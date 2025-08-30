@@ -1,5 +1,5 @@
-import About from "@/components/homepage/About";
-import Features from "@/components/homepage/Features";
+import About from "@/components/homepage/about";
+import KeyFeatures from "@/components/homepage/features";
 import Hero from "@/components/homepage/hero";
 import HowItWorks from "@/components/homepage/howItWorks";
 import Footer from "@/components/layout/footer";
@@ -13,7 +13,7 @@ const HomePage = () => {
         <Hero />
         <About />
         <HowItWorks />
-        <Features />
+        <KeyFeatures />
       </main>
       <Footer />
     </div>
