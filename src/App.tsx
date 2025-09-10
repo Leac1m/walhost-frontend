@@ -5,6 +5,7 @@ import Docs from "./pages/Docs";
 import NotFound from "./pages/NotFound";
 import DeploymentDetails from "./pages/Deploy/DeploymentDetails";
 import Deploy from "./pages/Deploy/index";
+import ScrollTop from "./components/layout/scrollToTop";
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="/deploy/:id" element={<DeploymentDetails />} />
         <Route path="/docs" element={<Docs />} />
       </Routes>
+      <ScrollTop />
     </BrowserRouter>
   );
 };
