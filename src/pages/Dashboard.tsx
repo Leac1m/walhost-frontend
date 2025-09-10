@@ -9,46 +9,55 @@ import { useNavigate } from "react-router";
 const Dashboard = () => {
   const projects = [
     {
+      id: 1,
       name: "Walhost one",
       url: "Projectone.wal.app",
       status: "deployed" as const,
     },
     {
+      id: 2,
       name: "Project two",
       url: "Projectone.wal.app",
       status: "failed" as const,
     },
     {
+      id: 3,
       name: "Project three",
       url: "Projectone.wal.app",
       status: "pending" as const,
     },
     {
+      id: 4,
       name: "Project one",
       url: "Projectone.wal.app",
       status: "deployed" as const,
     },
     {
+      id: 5,
       name: "Project two",
       url: "Projectone.wal.app",
       status: "failed" as const,
     },
     {
+      id: 6,
       name: "Project three",
       url: "Projectone.wal.app",
       status: "pending" as const,
     },
     {
+      id: 7,
       name: "Project one",
       url: "Projectone.wal.app",
       status: "deployed" as const,
     },
     {
+      id: 8,
       name: "Project two",
       url: "Projectone.wal.app",
       status: "failed" as const,
     },
     {
+      id: 9,
       name: "Project three",
       url: "Projectone.wal.app",
       status: "pending" as const,
@@ -92,9 +101,10 @@ const Dashboard = () => {
 
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project, index) => (
+          {projects.map((project) => (
             <ProjectCard
-              key={index}
+              id={project.id}
+              key={project.id}
               name={project.name}
               url={project.url}
               status={project.status}

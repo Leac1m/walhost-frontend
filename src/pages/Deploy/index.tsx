@@ -6,6 +6,7 @@ import { useState } from "react";
 import DeployInit from "@/components/deploy/DeployInit";
 import DeployFailed from "@/components/deploy/DeployFailed";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 
 const Deploy = () => {
   const [state, setState] = useState<
@@ -53,7 +54,7 @@ const Deploy = () => {
           Failed
         </Button>
       </div>
-
+      <Toaster />
       <Footer />
     </div>
   );

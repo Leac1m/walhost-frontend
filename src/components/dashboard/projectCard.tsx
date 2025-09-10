@@ -2,14 +2,16 @@ import { CheckCircle, XCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import projectIcon from "@/assets/project_icon.svg";
+import { useNavigate } from "react-router";
 
 interface ProjectCardProps {
+  id: number;
   name: string;
   url: string;
   status: "deployed" | "failed" | "pending";
 }
 
-const ProjectCard = ({ name, url, status }: ProjectCardProps) => {
+const ProjectCard = ({ id, name, url, status }: ProjectCardProps) => {
   const getStatusConfig = () => {
     switch (status) {
       case "deployed":
@@ -38,6 +40,8 @@ const ProjectCard = ({ name, url, status }: ProjectCardProps) => {
 
   const statusConfig = getStatusConfig();
   const StatusIcon = statusConfig.icon;
+
+  const navigate = useNavigate();
 
   return (
     <Card className="border-border bg-card hover:bg-card/80 transition-colors">
@@ -68,6 +72,7 @@ const ProjectCard = ({ name, url, status }: ProjectCardProps) => {
             variant="ghost"
             size="sm"
             className="text-primary hover:text-primary/80 px-2 cursor-pointer"
+            onClick={() => navigate(`/deploy/${id}`)}
           >
             View
           </Button>
