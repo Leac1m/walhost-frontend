@@ -1,0 +1,111 @@
+import { Plus, Search, SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
+import ProjectCard from "@/components/dashboard/projectCard";
+import { useNavigate } from "react-router";
+
+const Dashboard = () => {
+  const projects = [
+    {
+      name: "Walhost one",
+      url: "Projectone.wal.app",
+      status: "deployed" as const,
+    },
+    {
+      name: "Project two",
+      url: "Projectone.wal.app",
+      status: "failed" as const,
+    },
+    {
+      name: "Project three",
+      url: "Projectone.wal.app",
+      status: "pending" as const,
+    },
+    {
+      name: "Project one",
+      url: "Projectone.wal.app",
+      status: "deployed" as const,
+    },
+    {
+      name: "Project two",
+      url: "Projectone.wal.app",
+      status: "failed" as const,
+    },
+    {
+      name: "Project three",
+      url: "Projectone.wal.app",
+      status: "pending" as const,
+    },
+    {
+      name: "Project one",
+      url: "Projectone.wal.app",
+      status: "deployed" as const,
+    },
+    {
+      name: "Project two",
+      url: "Projectone.wal.app",
+      status: "failed" as const,
+    },
+    {
+      name: "Project three",
+      url: "Projectone.wal.app",
+      status: "pending" as const,
+    },
+  ];
+
+  const navigate = useNavigate();
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+
+      <main className="container mx-auto px-6 py-8">
+        {/* Deploy Button */}
+        <div className="text-center mb-12">
+          <Button
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
+            onClick={() => navigate("/deploy")}
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Deploy new project
+          </Button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-8">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search for projects"
+              className="pl-10 pr-12 bg-input border-border"
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1"
+            >
+              <SlidersHorizontal className="w-4 h-4" color="#B4433A" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Projects Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {projects.map((project, index) => (
+            <ProjectCard
+              key={index}
+              name={project.name}
+              url={project.url}
+              status={project.status}
+            />
+          ))}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Dashboard;

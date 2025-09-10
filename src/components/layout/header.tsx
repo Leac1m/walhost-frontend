@@ -6,14 +6,14 @@ import {
 } from "@/components/ui/navigation-menu";
 import Logo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router";
+import { Link, NavLink } from "react-router";
 
 const Header = () => {
   const navItems = [
-    { title: "Overview", href: "#overview" },
-    { title: "Dashboard", href: "#dashboard" },
-    { title: "Deploy", href: "#deploy" },
-    { title: "Docs", href: "#docs" },
+    { title: "Overview", href: "/#overview" },
+    { title: "Dashboard", href: "/dashboard" },
+    { title: "Deploy", href: "/deploy" },
+    { title: "Docs", href: "/docs" },
   ];
 
   return (
@@ -25,7 +25,7 @@ const Header = () => {
             <img
               src={Logo}
               alt="Walhost Logo"
-              className="h-40 w-30 object-contain drop-shadow-2xl"
+              className="w-30 object-contain"
             />
           </div>
         </Link>
@@ -35,14 +35,18 @@ const Header = () => {
           <NavigationMenuList className="space-x-6">
             {navItems.map((item) => (
               <NavigationMenuItem key={item.title}>
-                <a
-                  href={item.href}
-                  className={cn(
-                    "group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
-                  )}
+                <NavLink
+                  to={item.href}
+                  className={({ isActive }) =>
+                    cn(
+                      "group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                      isActive &&
+                        "bg-accent text-accent-foreground font-bold shadow"
+                    )
+                  }
                 >
                   {item.title}
-                </a>
+                </NavLink>
               </NavigationMenuItem>
             ))}
           </NavigationMenuList>
