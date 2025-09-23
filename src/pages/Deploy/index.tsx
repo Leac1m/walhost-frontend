@@ -1,32 +1,45 @@
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
-import DeploySuccess from "@/components/deploy/DeploySuccess";
-import DeployLoading from "@/components/deploy/DeployLoading";
-import { useState } from "react";
-import DeployInit from "@/components/deploy/DeployInit";
-import DeployFailed from "@/components/deploy/DeployFailed";
-import { Button } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/sonner";
+import Header from '@/components/layout/header';
+import Footer from '@/components/layout/footer';
+import DeploySuccess from '@/components/deploy/DeploySuccess';
+import DeployLoading from '@/components/deploy/DeployLoading';
+import { useState } from 'react';
+import DeployInit from '@/components/deploy/DeployInit';
+import DeployFailed from '@/components/deploy/DeployFailed';
+import { Button } from '@/components/ui/button';
+import { Toaster } from '@/components/ui/sonner';
+import { useDeployment } from '@/hooks/useDeployment';
 
 const Deploy = () => {
   const [state, setState] = useState<
-    "loading" | "success" | "failed" | "default"
-  >("failed");
+    'loading' | 'success' | 'failed' | 'default'
+  >('default');
 
-  const handleDeploy = () => {
-    if (state === "default") {
-      setState("loading");
+  const { isDeploying, deploymentData, uploadProgress, error, deploy, reset } =
+    useDeployment();
+
+  const handleDeploy = async (file: File) => {
+    try {
+      setState('loading');
+      await deploy(file);
+      setState('success');
+    } catch (error) {
+      setState('failed');
     }
+  };
+
+  const handleRetry = () => {
+    setState('default');
+    reset();
   };
 
   const renderCurrentState = () => {
     switch (state) {
-      case "loading":
-        return <DeployLoading />;
-      case "success":
-        return <DeploySuccess />;
-      case "failed":
-        return <DeployFailed />;
+      case 'loading':
+        return <DeployLoading progress={uploadProgress} />;
+      case 'success':
+        return <DeploySuccess deploymentData={deploymentData} />;
+      case 'failed':
+        return <DeployFailed error={error} onRetry={handleRetry} />;
       default:
         return <DeployInit handleDeploy={handleDeploy} />;
     }
@@ -39,21 +52,24 @@ const Deploy = () => {
         {renderCurrentState()}
       </main>
 
-      {/* State Toggle Buttons */}
-      <div className="flex justify-center mb-2 gap-4">
-        <Button variant={"outline"} onClick={() => setState("default")}>
-          Default
-        </Button>
-        <Button variant={"outline"} onClick={() => setState("loading")}>
-          Loading
-        </Button>
-        <Button variant={"outline"} onClick={() => setState("success")}>
-          Success
-        </Button>
-        <Button variant={"outline"} onClick={() => setState("failed")}>
-          Failed
-        </Button>
-      </div>
+      {/* Development State Toggle Buttons - Remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="flex justify-center mb-2 gap-4">
+          <Button variant={'outline'} onClick={() => setState('default')}>
+            Default
+          </Button>
+          <Button variant={'outline'} onClick={() => setState('loading')}>
+            Loading
+          </Button>
+          <Button variant={'outline'} onClick={() => setState('success')}>
+            Success
+          </Button>
+          <Button variant={'outline'} onClick={() => setState('failed')}>
+            Failed
+          </Button>
+        </div>
+      )}
+
       <Toaster />
       <Footer />
     </div>
