@@ -203,7 +203,7 @@ export class DeploymentAPI {
             );
             return {
                 success: true,
-                data: { deployments: deployments.map(d => d.data.deployments) }
+                data: { deployments: deployments.map(d => d.data.deployment) }
             };
         }
 
