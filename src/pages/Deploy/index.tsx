@@ -7,15 +7,15 @@ import DeployInit from '@/components/deploy/DeployInit';
 import DeployFailed from '@/components/deploy/DeployFailed';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
-import { useDeployment } from '@/hooks/useDeployment';
+import { useDeploymentClient } from '@/hooks/useDeploymensts';
 
 const Deploy = () => {
   const [state, setState] = useState<
     'loading' | 'success' | 'failed' | 'default'
   >('default');
 
-  const { isDeploying, deploymentData, uploadProgress, error, deploy, reset } =
-    useDeployment();
+  const { uploadedData, uploadProgress, error, deploy, reset } =
+    (useDeploymentClient()).uploadClient;
 
   const handleDeploy = async (file: File) => {
     try {
@@ -37,7 +37,7 @@ const Deploy = () => {
       case 'loading':
         return <DeployLoading progress={uploadProgress} />;
       case 'success':
-        return <DeploySuccess deploymentData={deploymentData} />;
+        return <DeploySuccess uploadingData={uploadedData} />;
       case 'failed':
         return <DeployFailed error={error} onRetry={handleRetry} />;
       default:
