@@ -28,8 +28,12 @@ export interface UploadProgress {
 }
 
 export class DeploymentAPI {
-    // private static baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/';
-    private static isDevelopment = import.meta.env.DEV;
+    // Checks if in production or development
+    private static isDevelopment = import.meta.env.VITE_API_BASE_URL ?  false : import.meta.env.DEV;
+
+    // Sets the right endpoint based on environment
+    private static baseUrl = (this.isDevelopment ? '/api' :
+        (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/'));
 
     static async uploadProject(
         file: File,
@@ -43,7 +47,7 @@ export class DeploymentAPI {
         // Real implementation for production
         const response = await this.realUploadProject(file, onProgress);
 
-        console.log("Upload response: ",response)
+        console.log("Upload response: ", response)
 
         const result = await this.startDeployment(response.data.deploymentId);
 
@@ -52,19 +56,19 @@ export class DeploymentAPI {
 
     private static async startDeployment(deploymentId: string): Promise<DeploymentResponse> {
         const options = {
-        method: 'POST',
-        headers: {'content-type': 'application/json'},
-        body: `{"deploymentId":"${deploymentId}"}`
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: `{"deploymentId":"${deploymentId}"}`
         };
-        
-        const response = await fetch('/api/deploy', options);
-    
+
+        const response = await fetch(`${this.baseUrl}/deploy`, options);
+
         if (!response.ok) {
             throw new Error(`Failed to get deployment status: ${response.statusText}`);
         }
         const data = await response.json();
         console.log(data);
-        
+
 
         return data;
     }
@@ -76,19 +80,19 @@ export class DeploymentAPI {
         }
         // mockRetryDeployment
         const options = {
-        method: 'POST',
-        headers: {'content-type': 'application/json'},
-        body: `{"deploymentId":"${deploymentId}"}`
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: `{"deploymentId":"${deploymentId}"}`
         };
-        
-        const response = await fetch('/api/deploy', options);
-    
+
+        const response = await fetch(`${this.baseUrl}/deploy`, options);
+
         if (!response.ok) {
             throw new Error(`Failed to get deployment status: ${response.statusText}`);
         }
         const data = await response.json();
         console.log(data);
-        
+
 
         return data;
     }
@@ -151,7 +155,7 @@ export class DeploymentAPI {
         formData.append('fileName', file.name);
         formData.append('fileSize', file.size.toString());
 
-        
+
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
 
@@ -215,7 +219,7 @@ export class DeploymentAPI {
             return this.mockGetDeploymentStatus(deploymentId);
         }
 
-        const response = await fetch(`/api/deploy/status/${deploymentId}`, {
+        const response = await fetch(`${this.baseUrl}/deploy/status/${deploymentId}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
             }
@@ -245,7 +249,7 @@ export class DeploymentAPI {
             };
         }
 
-        const response = await fetch(`/api/deploy/status`, {
+        const response = await fetch(`${this.baseUrl}/deploy/status`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
             }
@@ -290,7 +294,7 @@ export class DeploymentAPI {
 
         const deployment = {
             deploymentId,
-            status:  "deploying" as IDeployment["status"],
+            status: "deploying" as IDeployment["status"],
             message: "Deployment started successfully"
         };
 
