@@ -11,7 +11,7 @@ export interface DeploymentResponse {
 
 export interface GetStatusResponce<IDeployment> {
     success: boolean
-    data: { deployment: IDeployment}
+    data: IDeployment;
 }
 
 export interface GetAllStatusResponce<IDeployment> {
@@ -138,8 +138,8 @@ export class DeploymentAPI {
                     try {
                         const response: DeploymentResponse = JSON.parse(xhr.responseText);
                         resolve(response);
-                    } catch (error) {
-                        reject(new Error('Invalid response format'));
+                    } catch {
+                        reject(new Error(`Invalid response format :`));
                     }
                 } else {
                     try {
@@ -189,9 +189,11 @@ export class DeploymentAPI {
             throw new Error(`Failed to get deployment status: ${response.statusText}`);
         }
 
-        console.log(response.json());
+        console.log(response)
+        const data = await response.json();
+        console.log("Data :", data);
 
-        return response.json();
+        return data;
     }
 
     // Get All Deployments
@@ -203,7 +205,7 @@ export class DeploymentAPI {
             );
             return {
                 success: true,
-                data: { deployments: deployments.map(d => d.data.deployment) }
+                data: { deployments: deployments.map(d => d.data) }
             };
         }
 
@@ -249,7 +251,7 @@ export class DeploymentAPI {
 
         return {
             success: true,
-            data: { deployment }
+            data: deployment
         }
     }
 
@@ -258,7 +260,7 @@ export class DeploymentAPI {
     // Utility method to toggle between mock and real API
     static setMockMode(enabled: boolean) {
         // You can use this to manually override the mock mode
-        (this as any).isDevelopment = enabled;
+        this.isDevelopment = enabled;
     }
 }
 
