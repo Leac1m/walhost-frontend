@@ -2,11 +2,17 @@ import { CheckCircle, Eye, Share2, Grid3X3, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import type { uploadedData } from "@/hooks/useUpload";
 
-const DeploySuccess = () => {
+interface DeploySuccessProp {
+  uploadedData: uploadedData | null
+}
+
+const DeploySuccess = ({ uploadedData }: DeploySuccessProp) => {
   const navigate = useNavigate();
 
-  const projectUrl = "Projectone.wal.app";
+  const deploymentId = uploadedData?.deploymentId;
+  const projectUrl =  uploadedData ? uploadedData.url : "Projectone.wal.app";
   const walrusObjectId = "0x3e...45DH";
   const suiTxHash = "0x3e...45DH";
 
@@ -16,6 +22,8 @@ const DeploySuccess = () => {
       description: `${label} copied to clipboard`,
     });
   };
+
+  console.log("DeploymentId",deploymentId);
 
   return (
     <div className="max-w-2xl w-full">
@@ -95,7 +103,8 @@ const DeploySuccess = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 flex-1 cursor-pointer"
-              onClick={() => window.open(`https://${projectUrl}`, "_blank")}
+              // onClick={() => window.open(`https://${projectUrl}`, "_blank")}
+              onClick={() => navigate(`/deploy/${deploymentId}`)}
             >
               <Eye className="w-4 h-4" />
               View Site

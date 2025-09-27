@@ -2,11 +2,13 @@ import type { IDeployment } from "@/types";
 
 export interface DeploymentResponse {
     success: boolean;
-    deploymentId: string;
-    url?: string;
     message?: string;
-    status: string;
     error?: string;
+    data: {
+        deploymentId: string;
+        url?: string;
+        status: IDeployment["status"];
+    };
 }
 
 export interface GetStatusResponce<IDeployment> {
@@ -26,7 +28,7 @@ export interface UploadProgress {
 }
 
 export class DeploymentAPI {
-    private static baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/';
+    // private static baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/';
     private static isDevelopment = import.meta.env.DEV;
 
     static async uploadProject(
@@ -43,20 +45,52 @@ export class DeploymentAPI {
 
         console.log("Upload response: ",response)
 
+        const result = await this.startDeployment(response.data.deploymentId);
+
+        return result;
+    }
+
+    private static async startDeployment(deploymentId: string): Promise<DeploymentResponse> {
         const options = {
         method: 'POST',
         headers: {'content-type': 'application/json'},
-        body: `{"deploymentId":"${response.deploymentId}"}`
+        body: `{"deploymentId":"${deploymentId}"}`
         };
-
-        try {
-        const res = await fetch('/api/deploy', options);
-        const data = await res.json();
+        
+        const response = await fetch('/api/deploy', options);
+    
+        if (!response.ok) {
+            throw new Error(`Failed to get deployment status: ${response.statusText}`);
+        }
+        const data = await response.json();
         console.log(data);
-        } catch (error) {
-        console.error(error);
-}
-        return response;
+        
+
+        return data;
+    }
+
+    static async restartDeployment(deploymentId: string): Promise<DeploymentResponse> {
+        // Mock implementation for development
+        if (this.isDevelopment) {
+            return await this.mockRetryDeployment(deploymentId);
+        }
+        // mockRetryDeployment
+        const options = {
+        method: 'POST',
+        headers: {'content-type': 'application/json'},
+        body: `{"deploymentId":"${deploymentId}"}`
+        };
+        
+        const response = await fetch('/api/deploy', options);
+    
+        if (!response.ok) {
+            throw new Error(`Failed to get deployment status: ${response.statusText}`);
+        }
+        const data = await response.json();
+        console.log(data);
+        
+
+        return data;
     }
 
     // Mock implementation for development/testing
@@ -95,9 +129,11 @@ export class DeploymentAPI {
 
             return {
                 success: true,
-                status: "uploaded",
-                deploymentId: mockDeploymentId,
-                url: mockUrl,
+                data: {
+                    status: "uploaded",
+                    deploymentId: mockDeploymentId,
+                    url: mockUrl,
+                },
                 message: 'Project deployed successfully to the cloud!'
             };
         } else {
@@ -238,13 +274,6 @@ export class DeploymentAPI {
             siteName: "demo site name",
             status: randomStatus as IDeployment["status"],
             siteUrl: randomStatus === 'ready' ? `https://example-${deploymentId.slice(-8)}.walhost.app` : undefined,
-            // logs: [
-            //     '📦 Extracting project files...',
-            //     '🔍 Analyzing project structure...',
-            //     '📋 Installing dependencies...',
-            //     '🏗️ Building project...',
-            //     randomStatus === 'ready' ? '✅ Deployment completed successfully!' : '⏳ Deployment in progress...'
-            // ],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         } as IDeployment;
@@ -255,7 +284,22 @@ export class DeploymentAPI {
         }
     }
 
-    
+    private static async mockRetryDeployment(deploymentId: string) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const deployment = {
+            deploymentId,
+            status:  "deploying" as IDeployment["status"],
+            message: "Deployment started successfully"
+        };
+
+        return {
+            success: true,
+            data: deployment
+        }
+    }
+
 
     // Utility method to toggle between mock and real API
     static setMockMode(enabled: boolean) {
@@ -270,9 +314,11 @@ export const generateMockDeployment = (overrides: Partial<DeploymentResponse> = 
 
     return {
         success: true,
-        deploymentId: mockId,
-        status: "uploaded",
-        url: `https://example-${mockId.slice(-8)}.walhost.app`,
+        data: {
+            deploymentId: mockId,
+            status: "uploaded",
+            url: `https://example-${mockId.slice(-8)}.walhost.app`,
+        },
         message: 'Mock deployment created successfully!',
         ...overrides
     };

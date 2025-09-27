@@ -22,6 +22,7 @@ const Deploy = () => {
       setState('loading');
       await deploy(file);
       setState('success');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setState('failed');
     }
@@ -37,7 +38,7 @@ const Deploy = () => {
       case 'loading':
         return <DeployLoading progress={uploadProgress} />;
       case 'success':
-        return <DeploySuccess uploadingData={uploadedData} />;
+        return <DeploySuccess uploadedData={uploadedData} />;
       case 'failed':
         return <DeployFailed error={error} onRetry={handleRetry} />;
       default:

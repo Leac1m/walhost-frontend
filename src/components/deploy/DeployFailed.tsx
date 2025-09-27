@@ -2,7 +2,12 @@ import { Grid3X3, XCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { useNavigate } from "react-router";
 
-const DeployFailed = () => {
+interface DeployFailedProps {
+  error: string | null;
+  onRetry: () => void;
+}
+
+const DeployFailed = ({ error }: DeployFailedProps) => {
   const navigate = useNavigate();
 
   const retryDeployment = () => {};
@@ -34,7 +39,7 @@ const DeployFailed = () => {
             <p>
               Error:{"  "}
               <span className="text-sm text-muted-foreground">
-                Missing environment variables
+                { error ? error : "Missing environment variables"}
               </span>
             </p>
           </div>

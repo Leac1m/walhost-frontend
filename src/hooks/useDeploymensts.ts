@@ -49,7 +49,6 @@ export const useDeploymentClient = (): UseDeploymentClientReturn => {
             setIsLoading(true);
 
             const deployment = await DeploymentAPI.getDeploymentStatus(id);
-            console.log( "zghjkjh" ,deployment);
             if (deployment.success) {
                 setDeploymentData(deployment.data);
                 toast.success("Dashboard Loaded Successfully");

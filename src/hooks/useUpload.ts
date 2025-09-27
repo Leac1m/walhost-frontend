@@ -39,8 +39,8 @@ export const useUploadClient = (): UseUploadReturn => {
 
             if (response.success) {
                 setUploadedData({
-                    deploymentId: response.deploymentId,
-                    url: response.url,
+                    deploymentId: response.data.deploymentId,
+                    url: response.data.url,
                     message: response.message
                 });
                 toast.success("Project deployed successfully!");
