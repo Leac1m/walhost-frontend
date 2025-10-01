@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import projectIcon from "@/assets/project_icon.svg";
 import { useNavigate } from "react-router";
+import type { IDeployment } from "@/types";
 
 interface ProjectCardProps {
-  id: number;
-  name: string;
-  url: string;
-  status: "deployed" | "failed" | "pending";
+  id: string;
+  name?: string;
+  url?: string;
+  status: IDeployment["status"];
 }
 
 const ProjectCard = ({ id, name, url, status }: ProjectCardProps) => {
@@ -28,13 +29,21 @@ const ProjectCard = ({ id, name, url, status }: ProjectCardProps) => {
           iconClass: "text-red-400",
           bgClass: "bg-red-400/10",
         };
-      case "pending":
+      case "deploying":
         return {
           icon: Clock,
-          text: "Pending",
+          text: "deploying",
           iconClass: "text-muted-foreground",
           bgClass: "bg-muted-foreground/10",
         };
+      default:
+        return {
+          icon: CheckCircle,
+          text: "uploaded",
+          iconClass: "text-green-400",
+          bgClass: "bg-green-400/10",
+        }
+
     }
   };
 

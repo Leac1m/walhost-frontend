@@ -1,6 +1,11 @@
+import type { UploadProgress } from "@/lib/api";
 import { Loader2, Upload } from "lucide-react";
 
-const DeployLoading = () => {
+interface DeloyLoadingProps {
+  progress: UploadProgress | null
+}
+
+const DeployLoading = ({ progress }: DeloyLoadingProps) => {
   return (
     <div className="max-w-2xl w-full">
       {/* Loading Card */}
@@ -60,7 +65,7 @@ const DeployLoading = () => {
           <div className="w-full bg-muted rounded-full h-2">
             <div
               className="bg-primary h-2 rounded-full animate-pulse"
-              style={{ width: "60%" }}
+              style={{ width: `${progress ? progress.percentage : '60'}%` }}
             ></div>
           </div>
         </div>

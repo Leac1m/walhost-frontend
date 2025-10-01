@@ -5,65 +5,75 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import ProjectCard from "@/components/dashboard/projectCard";
 import { useNavigate } from "react-router";
+import { useDeploymentClient } from "@/hooks/useDeploymensts";
+import { useEffect } from "react";
 
 const Dashboard = () => {
-  const projects = [
-    {
-      id: 1,
-      name: "Walhost one",
-      url: "Projectone.wal.app",
-      status: "deployed" as const,
-    },
-    {
-      id: 2,
-      name: "Project two",
-      url: "Projectone.wal.app",
-      status: "failed" as const,
-    },
-    {
-      id: 3,
-      name: "Project three",
-      url: "Projectone.wal.app",
-      status: "pending" as const,
-    },
-    {
-      id: 4,
-      name: "Project one",
-      url: "Projectone.wal.app",
-      status: "deployed" as const,
-    },
-    {
-      id: 5,
-      name: "Project two",
-      url: "Projectone.wal.app",
-      status: "failed" as const,
-    },
-    {
-      id: 6,
-      name: "Project three",
-      url: "Projectone.wal.app",
-      status: "pending" as const,
-    },
-    {
-      id: 7,
-      name: "Project one",
-      url: "Projectone.wal.app",
-      status: "deployed" as const,
-    },
-    {
-      id: 8,
-      name: "Project two",
-      url: "Projectone.wal.app",
-      status: "failed" as const,
-    },
-    {
-      id: 9,
-      name: "Project three",
-      url: "Projectone.wal.app",
-      status: "pending" as const,
-    },
-  ];
+  const { getAllDeployments, deploymentsData } = useDeploymentClient();
+  // const projects = [
+  //   {
+  //     id: 1,
+  //     siteName: "Walhost one",
+  //     siteUrl: "Projectone.wal.app",
+  //     status: "deployed" as const,
+  //   },
+  //   {
+  //     id: 2,
+  //     siteName: "Project two",
+  //     siteUrl: "Projectone.wal.app",
+  //     status: "failed" as const,
+  //   },
+  //   {
+  //     id: 3,
+  //     siteName: "Project three",
+  //     siteUrl: "Projectone.wal.app",
+  //     status: "pending" as const,
+  //   },
+  //   {
+  //     id: 4,
+  //     siteName: "Project one",
+  //     siteUrl: "Projectone.wal.app",
+  //     status: "deployed" as const,
+  //   },
+  //   {
+  //     id: 5,
+  //     siteName: "Project two",
+  //     siteUrl: "Projectone.wal.app",
+  //     status: "failed" as const,
+  //   },
+  //   {
+  //     id: 6,
+  //     siteName: "Project three",
+  //     siteUrl: "Projectone.wal.app",
+  //     status: "pending" as const,
+  //   },
+  //   {
+  //     id: 7,
+  //     siteName: "Project one",
+  //     siteUrl: "Projectone.wal.app",
+  //     status: "deployed" as const,
+  //   },
+  //   {
+  //     id: 8,
+  //     siteName: "Project two",
+  //     siteUrl: "Projectone.wal.app",
+  //     status: "failed" as const,
+  //   },
+  //   {
+  //     id: 9,
+  //     siteName: "Project three",
+  //     siteUrl: "Projectone.wal.app",
+  //     status: "pending" as const,
+  //   },
+  // ];
+  useEffect(() => {
+    (async () => {
+      await getAllDeployments();
+    }) ()
+  }, [getAllDeployments]);
 
+
+  const projects = deploymentsData;
   const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background">
@@ -103,10 +113,10 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
             <ProjectCard
-              id={project.id}
-              key={project.id}
-              name={project.name}
-              url={project.url}
+              id={project.deploymentId}
+              key={project.deploymentId}
+              name={project.siteName}
+              url={project.siteUrl}
               status={project.status}
             />
           ))}
