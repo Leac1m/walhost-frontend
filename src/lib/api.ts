@@ -58,11 +58,12 @@ export class DeploymentAPI {
         priceUnit: "FROST";
         timestamp: Date;
     }> {
+
         if (this.isDevelopment) {
-            this.mockGetDeploymentBasePrice(deploymentId);
+            return this.mockGetDeploymentBasePrice(deploymentId);
         }
 
-        const response = await fetch(`${this.baseUrl}/deploy/status/${deploymentId}`);
+        const response = await fetch(`${this.baseUrl}/deploy/price/${deploymentId}`);
 
         if (!response.ok) {
             throw new Error(`Failed to get deployment price: ${response.statusText}`);

@@ -8,10 +8,11 @@ import DeployFailed from '@/components/deploy/DeployFailed';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { useDeploymentClient } from '@/hooks/useDeploymensts';
+import DeployConfig from '@/components/deploy/DeployConfig';
 
 const Deploy = () => {
   const [state, setState] = useState<
-    'loading' | 'success' | 'failed' | 'default'
+    'loading' | 'config' |  'success' | 'failed' | 'default'
   >('default');
 
   const { uploadedData, uploadProgress, error, deploy, reset } =
@@ -37,6 +38,8 @@ const Deploy = () => {
     switch (state) {
       case 'loading':
         return <DeployLoading progress={uploadProgress} />;
+      case 'config':
+        return <DeployConfig deploymentId='dd'/>;
       case 'success':
         return <DeploySuccess uploadedData={uploadedData} />;
       case 'failed':
@@ -58,6 +61,9 @@ const Deploy = () => {
         <div className="flex justify-center mb-2 gap-4">
           <Button variant={'outline'} onClick={() => setState('default')}>
             Default
+          </Button>
+          <Button variant={'outline'} onClick={() => setState('config')}>
+            Config
           </Button>
           <Button variant={'outline'} onClick={() => setState('loading')}>
             Loading

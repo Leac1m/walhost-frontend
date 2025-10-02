@@ -8,12 +8,11 @@ interface UseDeploymentClientReturn {
     loading: boolean,
     deploymentsData: IDeployment[],
     deploymentData: IDeployment | null,
-    priceData: DeploymentPriceResponse | null,
     error: string | null,
     uploadClient: UseUploadReturn,
     getAllDeployments: () => Promise<void>,
     getDeployment: (id: string) => Promise<void>,
-    getDeploymentBasePrice: (deploymentId: string) => Promise<void>,
+    getDeploymentBasePrice: (deploymentId: string) => Promise<DeploymentPriceResponse | null>,
     startDeployment: (deploymentId: string, payment: DeploymentPaymentRequest) => Promise<void>,
 }
 
@@ -21,7 +20,6 @@ export const useDeploymentClient = (): UseDeploymentClientReturn => {
     const [loading, setIsLoading] = useState(true);
     const [deploymentsData, setDeploymentsData] = useState<IDeployment[]>([]);
     const [deploymentData, setDeploymentData] = useState<IDeployment | null>(null);
-    const [priceData, setPriceData] = useState<DeploymentPriceResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
     const uploadClient = useUploadClient();
 
@@ -46,7 +44,7 @@ export const useDeploymentClient = (): UseDeploymentClientReturn => {
         }
     }, [])
 
-    const getDeploymentBasePrice = useCallback(async (deploymentId: string) => {
+    const getDeploymentBasePrice = useCallback(async (deploymentId: string): Promise<DeploymentPriceResponse | null> => {
         try {
             setIsLoading(true);
 
@@ -56,7 +54,7 @@ export const useDeploymentClient = (): UseDeploymentClientReturn => {
                 throw new Error("Failed to fetch deployment price");
             }
 
-            setPriceData(paymentData);
+            return paymentData;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : "Unknow error occured";
             setError(errorMessage);
@@ -118,7 +116,6 @@ export const useDeploymentClient = (): UseDeploymentClientReturn => {
         loading,
         deploymentsData,
         deploymentData,
-        priceData,
 
         error,
         uploadClient,
