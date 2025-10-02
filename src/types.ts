@@ -8,6 +8,22 @@ export interface IDeployment {
     updatedAt: string
 }
 
+export interface DeploymentPaymentRequest {
+    transactionBytes: string,
+    signature: string,
+    recipientAddress: string,
+    amount: number,
+    sender: string,
+    epochs: number
+}
+
+export interface DeploymentPriceResponse {
+    deploymentId: string;
+    priceEstimate: string;
+    priceUnit: "FROST";
+    timestamp: Date;
+}
+
 // "deploymentId": "68d6c50046ab68851f23398b",
 //     "status": "deployed",
 //     "url": "http://59y86thgl1elnrz13pphhv9cd98osvl1xhz69wnsos2f42u6b2.localhost:3000",

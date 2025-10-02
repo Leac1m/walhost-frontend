@@ -1,4 +1,4 @@
-import type { IDeployment } from "@/types";
+import type { DeploymentPaymentRequest, IDeployment } from "@/types";
 
 export interface DeploymentResponse {
     success: boolean;
@@ -29,7 +29,7 @@ export interface UploadProgress {
 
 export class DeploymentAPI {
     // Checks if in production or development
-    private static isDevelopment = import.meta.env.VITE_API_BASE_URL ?  false : import.meta.env.DEV;
+    private static isDevelopment = import.meta.env.VITE_API_BASE_URL ? false : import.meta.env.DEV;
 
     // Sets the right endpoint based on environment
     private static baseUrl = (this.isDevelopment ? '/api' :
@@ -47,18 +47,45 @@ export class DeploymentAPI {
         // Real implementation for production
         const response = await this.realUploadProject(file, onProgress);
 
-        console.log("Upload response: ", response)
 
-        const result = await this.startDeployment(response.data.deploymentId);
-
-        return result;
+        return response;
     }
 
-    private static async startDeployment(deploymentId: string): Promise<DeploymentResponse> {
+    // Get price api call
+    static async getDeploymentBasePrice(deploymentId: string): Promise<{
+        deploymentId: string;
+        priceEstimate: string;
+        priceUnit: "FROST";
+        timestamp: Date;
+    }> {
+        if (this.isDevelopment) {
+            this.mockGetDeploymentBasePrice(deploymentId);
+        }
+
+        const response = await fetch(`${this.baseUrl}/deploy/status/${deploymentId}`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to get deployment price: ${response.statusText}`);
+        }
+
+
+        return await response.json();
+    }
+
+    static async startDeployment(
+        deploymentId: string,
+        payment: DeploymentPaymentRequest
+
+    ): Promise<DeploymentResponse> {
+        if (this.isDevelopment) {
+            return this.mockStartDeployment(deploymentId, payment);
+        }
+
         const options = {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: `{"deploymentId":"${deploymentId}"}`
+            body: JSON.stringify({ deploymentId, payment })
+            
         };
 
         const response = await fetch(`${this.baseUrl}/deploy`, options);
@@ -301,6 +328,56 @@ export class DeploymentAPI {
         return {
             success: true,
             data: deployment
+        }
+    }
+
+    // Mock implementation for deployment price
+    private static async mockGetDeploymentBasePrice(deploymentId: string): Promise<{
+        deploymentId: string;
+        priceEstimate: string;
+        priceUnit: "FROST";
+        timestamp: Date;
+    }> {
+
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Generate mock price between 100k and 500k FROST
+        const mockPrice = (Math.random() * (500000 - 100000) + 100000).toFixed(0);
+
+        return {
+            deploymentId,
+            priceEstimate: mockPrice,
+            priceUnit: "FROST",
+            timestamp: new Date(),
+        };
+    }
+
+    // Mock implementation for starting deployment
+    private static async mockStartDeployment(
+        deploymentId: string,
+        payment: { transactionBytes: string, signature: string, recipientAddress: string, amount: number, sender: string, epochs: number }
+    ): Promise<DeploymentResponse> {
+        console.log('🚀 Mock starting deployment for:', deploymentId);
+        console.log('💰 Mock payment received:', payment);
+
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // Simulate random success/failure for testing
+        const shouldSucceed = Math.random() > 0.15; // 85% success rate
+
+        if (shouldSucceed) {
+            return {
+                success: true,
+                data: {
+                    deploymentId,
+                    status: "deploying",
+                    url: `https://mock-${deploymentId.slice(-8)}.walhost.app`,
+                },
+                message: 'Deployment started successfully with payment!'
+            };
+        } else {
+            throw new Error('Mock deployment start failed: Payment verification failed');
         }
     }
 
