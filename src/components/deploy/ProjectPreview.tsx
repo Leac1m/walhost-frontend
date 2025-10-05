@@ -20,10 +20,8 @@ const ProjectPreview = ({ project }: ProjectPreviewProps) => {
     name: 'Project one',
     title: 'Your AI-Powered Design Assistant',
     description: 'Streamline your web app using state-of-the-art AI technology',
-    domain: 'projectone.wal.app',
     status: 'Live' as const,
     creationDate: 'August 7 2025',
-    creator: '0x3e...45DH',
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ...project as any,
   };

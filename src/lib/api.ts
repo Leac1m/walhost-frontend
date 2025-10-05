@@ -1,4 +1,4 @@
-import type { IDeployment } from "@/types";
+import type { DeploymentPaymentRequest, DeploymentPriceResponse, IDeployment, IDeploymentConfig, IDeploymentDetails } from "@/types";
 
 export interface DeploymentResponse {
     success: boolean;
@@ -29,11 +29,11 @@ export interface UploadProgress {
 
 export class DeploymentAPI {
     // Checks if in production or development
-    private static isDevelopment = import.meta.env.VITE_API_BASE_URL ?  false : import.meta.env.DEV;
+    private static isDevelopment = import.meta.env.VITE_API_BASE_URL ? false : import.meta.env.DEV;
 
     // Sets the right endpoint based on environment
-    private static baseUrl = (this.isDevelopment ? '/api' :
-        (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/'));
+    private static baseUrl = (this.isDevelopment ? '/' :
+        (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/'));
 
     static async uploadProject(
         file: File,
@@ -47,26 +47,55 @@ export class DeploymentAPI {
         // Real implementation for production
         const response = await this.realUploadProject(file, onProgress);
 
-        console.log("Upload response: ", response)
 
-        const result = await this.startDeployment(response.data.deploymentId);
-
-        return result;
+        return response;
     }
 
-    private static async startDeployment(deploymentId: string): Promise<DeploymentResponse> {
+    // Get price api call
+    static async getDeploymentBasePrice(deploymentId: string): Promise<{
+        data: DeploymentPriceResponse
+    }> {
+
+        if (this.isDevelopment) {
+            return this.mockGetDeploymentBasePrice(deploymentId);
+        }
+
+        const response = await fetch(`${this.baseUrl}/deploy/price/${deploymentId}`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to get deployment price: ${response.statusText}`);
+        }
+
+
+        return await response.json();
+    }
+
+    static async startDeployment(
+        deploymentId: string,
+        payment: DeploymentPaymentRequest,
+        config: IDeploymentConfig
+
+    ): Promise<DeploymentResponse> {
+        if (this.isDevelopment) {
+            return this.mockStartDeployment(deploymentId, payment);
+        }
+
         const options = {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
-            body: `{"deploymentId":"${deploymentId}"}`
+            body: JSON.stringify({ deploymentId, payment, config })
+            
         };
 
-        const response = await fetch(`${this.baseUrl}/deploy`, options);
+        console.log("Before deployploment", { deploymentId, payment, config })
 
-        if (!response.ok) {
-            throw new Error(`Failed to get deployment status: ${response.statusText}`);
-        }
+        const response = await fetch(`${this.baseUrl}/deploy`, options);
+        
         const data = await response.json();
+        if (!data.success) {
+            console.error("Start Deployment Failed: ", response)
+            throw new Error(`Failed to get deployment status: ${data?.error}`);
+        }
         console.log(data);
 
 
@@ -199,7 +228,7 @@ export class DeploymentAPI {
                 reject(new Error('Upload timeout'));
             });
 
-            xhr.open('POST', `api/upload`);
+            xhr.open('POST', `${this.baseUrl}/upload`);
 
             // Set timeout (5 minutes for large files)
             xhr.timeout = 5 * 60 * 1000;
@@ -214,7 +243,7 @@ export class DeploymentAPI {
         });
     }
 
-    static async getDeploymentStatus(deploymentId: string): Promise<GetStatusResponce<IDeployment>> {
+    static async getDeploymentStatus(deploymentId: string): Promise<GetStatusResponce<IDeploymentDetails>> {
         if (this.isDevelopment) {
             return this.mockGetDeploymentStatus(deploymentId);
         }
@@ -237,7 +266,7 @@ export class DeploymentAPI {
     }
 
     // Get All Deployments
-    static async getAllDeploymentStatus(): Promise<GetAllStatusResponce<IDeployment>> {
+    static async getAllDeploymentStatus(address: string): Promise<GetAllStatusResponce<IDeployment>> {
         if (this.isDevelopment) {
             const mockIds = Array.from({ length: 5 }, (_, i) => `mock_deploy_${i + 1}`);
             const deployments = await Promise.all(
@@ -249,14 +278,14 @@ export class DeploymentAPI {
             };
         }
 
-        const response = await fetch(`${this.baseUrl}/deploy/status`, {
+        const response = await fetch(`${this.baseUrl}/deploy/${address}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`
             }
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to get deployment status: ${response.statusText}`);
+            throw new Error(`Failed to get deployment projects: ${response.statusText}`);
         }
         console.log(response)
         const data = await response.json();
@@ -279,8 +308,15 @@ export class DeploymentAPI {
             status: randomStatus as IDeployment["status"],
             siteUrl: randomStatus === 'ready' ? `https://example-${deploymentId.slice(-8)}.walhost.app` : undefined,
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        } as IDeployment;
+            updatedAt: new Date().toISOString(),
+            fileHash: "f6e54aa1f8ce2bf74956e8c5a2f1e71267a9a868d28b2c72c60a6f1488e5d624",
+            owner: "0x000400000300005003",
+            metadata: {
+                extractedFiles: ["file1.txt", "file2.txt", "file3.txt"],
+                fileSize: 1851,
+                originalFilename: "counter-dapp.zip"
+            }
+        } as IDeploymentDetails;
 
         return {
             success: true,
@@ -301,6 +337,53 @@ export class DeploymentAPI {
         return {
             success: true,
             data: deployment
+        }
+    }
+
+    // Mock implementation for deployment price
+    private static async mockGetDeploymentBasePrice(deploymentId: string): Promise<{ data: DeploymentPriceResponse }> {
+
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Generate mock price between 100k and 500k FROST
+        const mockPrice = (Math.random() * (500000 - 100000) + 100000).toFixed(0);
+
+        const data = {
+            deploymentId,
+            estimatedPrice: mockPrice,
+            priceUnit: "FROST" as const,
+            recipientAddress: "0x12345",
+            timestamp: new Date(),
+        }
+        return { data };
+    }
+
+    // Mock implementation for starting deployment
+    private static async mockStartDeployment(
+        deploymentId: string,
+        payment: DeploymentPaymentRequest
+    ): Promise<DeploymentResponse> {
+        console.log('🚀 Mock starting deployment for:', deploymentId);
+        console.log('💰 Mock payment received:', payment);
+
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // Simulate random success/failure for testing
+        const shouldSucceed = Math.random() > 0.15; // 85% success rate
+
+        if (shouldSucceed) {
+            return {
+                success: true,
+                data: {
+                    deploymentId,
+                    status: "deploying",
+                    url: `https://mock-${deploymentId.slice(-8)}.walhost.app`,
+                },
+                message: 'Deployment started successfully with payment!'
+            };
+        } else {
+            throw new Error('Mock deployment start failed: Payment verification failed');
         }
     }
 
@@ -327,3 +410,5 @@ export const generateMockDeployment = (overrides: Partial<DeploymentResponse> = 
         ...overrides
     };
 };
+
+DeploymentAPI.setMockMode(false);

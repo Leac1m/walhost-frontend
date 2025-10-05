@@ -8,10 +8,11 @@ import DeployFailed from '@/components/deploy/DeployFailed';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { useDeploymentClient } from '@/hooks/useDeploymensts';
+import DeployConfig from '@/components/deploy/DeployConfig';
 
 const Deploy = () => {
   const [state, setState] = useState<
-    'loading' | 'success' | 'failed' | 'default'
+    'loading' | 'config' |  'success' | 'failed' | 'default'
   >('default');
 
   const { uploadedData, uploadProgress, error, deploy, reset } =
@@ -21,11 +22,21 @@ const Deploy = () => {
     try {
       setState('loading');
       await deploy(file);
-      setState('success');
+      setState('config'); // Move to config after successful upload
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setState('failed');
     }
+  };
+
+  const handleConfigured = (config: { siteName: string; epochs: number; totalFee: number }) => {
+    // Config data is saved, but we don't move to success yet
+    console.log('Configuration saved:', config);
+  };
+
+  const handleDeploymentSuccess = () => {
+    // Deployment request was successful, move to success
+    setState('success');
   };
 
   const handleRetry = () => {
@@ -37,6 +48,14 @@ const Deploy = () => {
     switch (state) {
       case 'loading':
         return <DeployLoading progress={uploadProgress} />;
+      case 'config':
+        return (
+          <DeployConfig 
+            deploymentId={uploadedData?.deploymentId || 'dd'} 
+            onConfigured={handleConfigured}
+            onDeploymentSuccess={handleDeploymentSuccess}
+          />
+        );
       case 'success':
         return <DeploySuccess uploadedData={uploadedData} />;
       case 'failed':
@@ -58,6 +77,9 @@ const Deploy = () => {
         <div className="flex justify-center mb-2 gap-4">
           <Button variant={'outline'} onClick={() => setState('default')}>
             Default
+          </Button>
+          <Button variant={'outline'} onClick={() => setState('config')}>
+            Config
           </Button>
           <Button variant={'outline'} onClick={() => setState('loading')}>
             Loading
