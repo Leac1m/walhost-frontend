@@ -3,26 +3,31 @@ import { Loader2, Settings } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { useDeploymentClient } from '@/hooks/useDeploymensts';
+import type { DeploymentPriceResponse } from '@/types';
+import { useCurrentAccount } from '@mysten/dapp-kit';
 
 interface DeployConfigProps {
   deploymentId: string;
   onConfigured?: (config: {
     siteName: string;
-    epoch: number;
+    epochs: number;
     totalFee: number;
   }) => void;
+  onDeploymentSuccess?: () => void;
 }
 
 const DeployConfig: React.FC<DeployConfigProps> = ({
   deploymentId,
   onConfigured,
+  onDeploymentSuccess,
 }) => {
-  const { getDeploymentBasePrice } = useDeploymentClient();
+  const { getDeploymentBasePrice, startDeployment } = useDeploymentClient();
   const [siteName, setSiteName] = useState('');
-  const [epoch, setEpoch] = useState(1);
-  const [estimatePrice, setEstimatePrice] = useState<number | null>(null);
+  const [epochs, setEpoch] = useState(1);
+  const [priceDetail, setPriceDetails] = useState<DeploymentPriceResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const currentAccount = useCurrentAccount();
 
   useEffect(() => {
     let mounted = true;
@@ -31,11 +36,12 @@ const DeployConfig: React.FC<DeployConfigProps> = ({
       setError(null);
       try {
         const priceData = await getDeploymentBasePrice(deploymentId);
+        console.log("PriceData", priceData);
         // priceEstimate is string, convert to number
-        if (priceData && priceData.priceEstimate) {
-          setEstimatePrice(Number(priceData.priceEstimate));
+        if (priceData) {
+          setPriceDetails(priceData);
         } else {
-          setEstimatePrice(null);
+          setPriceDetails(null);
         }
       } catch (e: unknown) {
         if (e && typeof e === 'object' && 'message' in e) {
@@ -45,7 +51,7 @@ const DeployConfig: React.FC<DeployConfigProps> = ({
         } else {
           setError('Failed to fetch price');
         }
-        setEstimatePrice(null);
+        setPriceDetails(null);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -56,12 +62,47 @@ const DeployConfig: React.FC<DeployConfigProps> = ({
     };
   }, [deploymentId, getDeploymentBasePrice]);
 
-  const totalFee = estimatePrice !== null ? estimatePrice * epoch : null;
+  const totalFee = priceDetail && priceDetail?.estimatedPrice !== null ? Number(priceDetail.estimatedPrice) * epochs : null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onConfigured && totalFee !== null) {
-      onConfigured({ siteName, epoch, totalFee });
+    // if (onConfigured && totalFee !== null) {
+    if (totalFee !== null) {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Call the config callback first
+        if (onConfigured) {
+          onConfigured({ siteName, epochs, totalFee });
+        }
+
+        // Start deployment
+        await startDeployment(deploymentId, {
+          amount: totalFee,
+          epochs: epochs,
+          recipientAddress: priceDetail!.recipientAddress,
+          sender: currentAccount?.address || '0x123',
+        },{
+          siteName,
+          epochs
+        });
+
+        // If deployment is successful, call success callback
+        if (onDeploymentSuccess) {
+          onDeploymentSuccess();
+        }
+      } catch (e: unknown) {
+        if (e && typeof e === 'object' && 'message' in e) {
+          setError(
+            (e as { message?: string }).message || 'Failed to start deployment'
+          );
+        } else {
+          setError('Failed to start deployment');
+        }
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -103,13 +144,13 @@ const DeployConfig: React.FC<DeployConfigProps> = ({
           </div>
           <div className="text-left space-y-3">
             <label className="block text-sm font-medium text-foreground mb-1">
-              Epochs: <span className="font-bold">{epoch}</span>
+              Epochs: <span className="font-bold">{epochs}</span>
             </label>
             <input
               type="range"
               min={1}
               max={10}
-              value={epoch}
+              value={epochs}
               onChange={(e) => setEpoch(Number(e.target.value))}
               className="w-full accent-primary"
             />
@@ -129,9 +170,9 @@ const DeployConfig: React.FC<DeployConfigProps> = ({
                 </span>
               ) : error ? (
                 <span className="text-destructive">{error}</span>
-              ) : estimatePrice !== null ? (
+              ) : priceDetail && priceDetail.estimatedPrice !== null ? (
                 <span>
-                  {estimatePrice} FROST x {epoch} = {totalFee} FROST
+                  {priceDetail && priceDetail.estimatedPrice} FROST x {epochs} = {totalFee} FROST
                 </span>
               ) : (
                 <span className="text-muted-foreground">N/A</span>
@@ -140,7 +181,7 @@ const DeployConfig: React.FC<DeployConfigProps> = ({
           </div>
           <Button
             type="submit"
-            disabled={loading || !siteName || estimatePrice === null}
+            disabled={loading || !siteName || priceDetail!.estimatedPrice === null}
             className="w-full"
           >
             Confirm Configuration

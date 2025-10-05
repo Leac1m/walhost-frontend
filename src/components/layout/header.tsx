@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -7,6 +7,7 @@ import {
 import Logo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import { Link, NavLink } from "react-router";
+import { ConnectButton } from "@mysten/dapp-kit";
 
 const Header = () => {
   const navItems = [
@@ -53,7 +54,8 @@ const Header = () => {
         </NavigationMenu>
 
         {/* Connect Wallet Button */}
-        <Button size="sm">Connect wallet</Button>
+        <ConnectButton />
+        {/* <Button size="sm">Connect wallet</Button> */}
       </div>
     </header>
   );

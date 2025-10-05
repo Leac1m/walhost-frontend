@@ -3,13 +3,13 @@ import ProjectPreview from '@/components/deploy/ProjectPreview';
 import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
 import { useDeploymentClient } from '@/hooks/useDeploymensts';
-import type { IDeployment } from '@/types';
+import type { IDeploymentDetails } from '@/types';
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
 // import { useParams } from "react-router";
 
 // In real app this would be fetched based on ID
-const getDummyProjectData = (data: IDeployment | null) => {
+const getDummyProjectData = (data: IDeploymentDetails | null) => {
   console.log(data);
   if (!data) {
     return null;
@@ -20,19 +20,20 @@ const getDummyProjectData = (data: IDeployment | null) => {
     domain: data?.siteUrl,
     status: data.status,
     creationDate: data.createdAt,
+    creator: data.owner,
   }
 
 
   const projectData = {
-    liveUrl: 'https://projectone.wal.app',
+    liveUrl: data?.siteUrl || 'No URL yet',
     permanentCid:
       'bafybeihdwdcefgh4dqkjv7h2daqvjmv7h2daqvjmvcz2y5mn3uxklifed4h43sm2se',
-    uploadedFileName: 'project.zip',
-    fileSize: '12.4 MB',
+    uploadedFileName: data.metadata.originalFilename || 'project.zip',
+    fileSize: `${data.metadata.fileSize / 1024} MB`,
     extractionResult: '56 files, 8 folders',
     frameworkDetected: 'Static HTML/CSS (no framework)',
     uploadedFileNamePerformance: '13.1 MB',
-    integrityHash: 'fsehjdkdj...f47j35',
+    integrityHash: data.fileHash,
     uptimeStatus: 'online' as const,
   };
   return { project, projectData };

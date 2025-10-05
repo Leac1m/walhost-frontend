@@ -22,11 +22,21 @@ const Deploy = () => {
     try {
       setState('loading');
       await deploy(file);
-      setState('success');
+      setState('config'); // Move to config after successful upload
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setState('failed');
     }
+  };
+
+  const handleConfigured = (config: { siteName: string; epochs: number; totalFee: number }) => {
+    // Config data is saved, but we don't move to success yet
+    console.log('Configuration saved:', config);
+  };
+
+  const handleDeploymentSuccess = () => {
+    // Deployment request was successful, move to success
+    setState('success');
   };
 
   const handleRetry = () => {
@@ -39,7 +49,13 @@ const Deploy = () => {
       case 'loading':
         return <DeployLoading progress={uploadProgress} />;
       case 'config':
-        return <DeployConfig deploymentId='dd'/>;
+        return (
+          <DeployConfig 
+            deploymentId={uploadedData?.deploymentId || 'dd'} 
+            onConfigured={handleConfigured}
+            onDeploymentSuccess={handleDeploymentSuccess}
+          />
+        );
       case 'success':
         return <DeploySuccess uploadedData={uploadedData} />;
       case 'failed':

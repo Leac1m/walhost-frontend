@@ -7,9 +7,14 @@ import ProjectCard from "@/components/dashboard/projectCard";
 import { useNavigate } from "react-router";
 import { useDeploymentClient } from "@/hooks/useDeploymensts";
 import { useEffect } from "react";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 
 const Dashboard = () => {
   const { getAllDeployments, deploymentsData } = useDeploymentClient();
+  const currentAccount = useCurrentAccount();
+  const navigate = useNavigate();
+  const walletAddress = currentAccount?.address;
+
   // const projects = [
   //   {
   //     id: 1,
@@ -68,13 +73,27 @@ const Dashboard = () => {
   // ];
   useEffect(() => {
     (async () => {
-      await getAllDeployments();
+      if (walletAddress) await getAllDeployments(walletAddress);
     }) ()
-  }, [getAllDeployments]);
+  }, [getAllDeployments, walletAddress]);
 
+
+  if (!walletAddress) {
+    return (
+      <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1 flex flex-col items-center justify-center">
+        <p className="text-lg text-muted-foreground mb-4">
+        Connect wallet to see projects
+        </p>
+      </main>
+      <Footer />
+      </div>
+    );
+  }
 
   const projects = deploymentsData;
-  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen bg-background">
       <Header />

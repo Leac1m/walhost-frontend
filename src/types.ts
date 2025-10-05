@@ -8,8 +8,18 @@ export interface IDeployment {
     updatedAt: string
 }
 
+export interface IDeploymentDetails extends IDeployment {
+    owner: string;
+    fileHash: string;
+    metadata: {
+        extractedFiles: string[];
+        fileSize: number;
+        originalFilename: string;
+    };
+}
+
 export interface DeploymentPaymentRequest {
-    transactionBytes: string,
+    transactionBytes: string | Uint8Array,
     signature: string,
     recipientAddress: string,
     amount: number,
@@ -19,11 +29,16 @@ export interface DeploymentPaymentRequest {
 
 export interface DeploymentPriceResponse {
     deploymentId: string;
-    priceEstimate: string;
+    estimatedPrice: string;
     priceUnit: "FROST";
+    recipientAddress: string;
     timestamp: Date;
 }
 
+export interface IDeploymentConfig {
+    siteName: string;
+    epochs: number;
+}
 // "deploymentId": "68d6c50046ab68851f23398b",
 //     "status": "deployed",
 //     "url": "http://59y86thgl1elnrz13pphhv9cd98osvl1xhz69wnsos2f42u6b2.localhost:3000",
